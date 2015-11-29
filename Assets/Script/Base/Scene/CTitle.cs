@@ -89,7 +89,8 @@ public class CTitle : CScene
 			m_Button.GetComponent<TimeScaler>().SetTargetScale(MIN_BUTTONSCALE, SCALE_SPD, true);
 
 		// シーン遷移
-		if (CManager.Instance.GetInput().GetKeyTrigger(KeyCode.Return))
+		if (CInput.Instance.GetKeyTrigger(KeyCode.Return) || 
+			CInput.Instance.GetJoyTrigger(4) || CInput.Instance.GetJoyTrigger(10))
 			CManager.Instance.GetSceneManager().SetNextScene(CSceneManager.eSceneID.MAIN, CChanging.eChangeType.WHITE_FEAD);
 	}
 

@@ -7,6 +7,7 @@ public class CManager : CSingleton<CManager>
 	// --プレハブ--
 	public GameObject pInput;
 	public GameObject pSceneManager;
+	public GameObject pDataStorage;
 	// TODO カメラ、ライト
 
 
@@ -14,6 +15,7 @@ public class CManager : CSingleton<CManager>
 	private GameObject m_Input = null;
 	private GameObject m_SceneManager = null;
 	private GameObject m_Camera = null;
+	private GameObject m_DataStorage = null;
 	
 	//**関数***************************************************************************
 	//	概要	:	オブジェクト多重生成防止
@@ -50,6 +52,11 @@ public class CManager : CSingleton<CManager>
 		{
 			m_Camera = transform.FindChild("Main Camera").gameObject;
 		}
+		if (!m_DataStorage)
+		{
+			m_DataStorage = (GameObject)GameObject.Instantiate(pDataStorage);
+			m_DataStorage.transform.SetParent(transform);
+		}
 	}
 
 
@@ -66,6 +73,11 @@ public class CManager : CSingleton<CManager>
 	public CInput GetInput()
 	{
 		return m_Input.GetComponent<CInput>();
+	}
+	
+	public CDataStorage GetDataStorage()
+	{
+		return m_DataStorage.GetComponent<CDataStorage>();
 	}
 
 	//**関数***************************************************************************

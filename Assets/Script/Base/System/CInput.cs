@@ -4,21 +4,35 @@
 using UnityEngine;
 using System.Collections;
 
-public class CInput : MonoBehaviour 
+public class CInput : CSingleton<CInput> 
 {
 	// --変数--
 	// TODO カーソルとなるレクト情報を保持
 	public GameObject InputColPrefab;
 	private GameObject m_InputCol;
 
-	// レクト情報を取得
+
+	// ゲームパッドアナログスティック
+	private Vector2 m_OldLJoySti;
+	private Vector2 m_CurLJoySti;
+	private Vector2 m_OldRJoySti;
+	private Vector2 m_CurRJoySti;
+
+
 
 	//**関数***************************************************************************
 	//	概要	:	変数初期化
 	//*********************************************************************************
 	void Awake()
-	{ 
+	{
+		if (this != Instance)
+		{
+			Destroy(this);
+			return;
+		}
+		DontDestroyOnLoad(this.gameObject);
 
+		m_OldLJoySti = m_OldRJoySti = m_CurLJoySti = m_CurRJoySti = Vector2.zero;
 	}
 
 
@@ -27,6 +41,8 @@ public class CInput : MonoBehaviour
 	//*********************************************************************************
 	void Update()
 	{
+		m_OldRJoySti = m_CurRJoySti;
+
 		if (Input.GetMouseButton(0))
 		{
 			Vector3 vec = CManager.Instance.GetCamera().ScreenToWorldPoint(Input.mousePosition);
@@ -79,23 +95,59 @@ public class CInput : MonoBehaviour
 
 
 	//**関数***************************************************************************
-	//	概要	:	指定番目のタッチ情報取得
+	//	概要	:	ゲームパッド情報取得
 	//*********************************************************************************
-	public bool GetTouchStay(int nTouchNo)
+	public bool GetJoyStay(int nButton)
 	{
+		if (Input.GetButton("Joy" + nButton.ToString()))
+			return true;
+		
+		return false;
+		
+	}
+	public bool GetJoyTrigger(int nButton)
+	{
+		if (Input.GetButtonDown("Joy" + nButton.ToString()))
+			return true;
+	
+		return false;
+	}
+	public bool GetJoyRelease(int nButton)
+	{
+		if (Input.GetButtonUp("Joy" + nButton.ToString()))
+			return true;
+	
 		return false;
 	}
 
-	//**関数***************************************************************************
-	//	概要	:	トリガーリリースのイベントが起こったときその番号を返す、なければ0
-	//*********************************************************************************
-	public int GetTouchTrigger()
+	public Vector2 GetJoyRStick()
 	{
-		return 0;
+		//m_OldRJoySti = m_CurRJoySti;
+		m_CurRJoySti.x = Input.GetAxis("JoyRHorizontal");
+		m_CurRJoySti.y = Input.GetAxis("JoyRVertical");
+		return m_CurRJoySti;
 	}
-	public int GetTouchRelease()
+
+	public Vector2 GetJoyLStick()
 	{
-		return 0;
+		//m_OldLJoySti = m_CurLJoySti;
+		m_CurLJoySti.x = Input.GetAxis("JoyLHorizontal");
+		m_CurLJoySti.y = Input.GetAxis("JoyLVertical");
+		return m_CurLJoySti;
+	}
+
+	public Vector2 GetOldLStick
+	{
+		get {
+			return m_OldLJoySti;
+		}
+	}
+	public Vector2 GetOldRStick
+	{
+		get
+		{
+			return m_OldRJoySti;
+		}
 	}
 
 
