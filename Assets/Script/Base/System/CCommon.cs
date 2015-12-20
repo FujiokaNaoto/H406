@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using DG.Tweening;
 
 public class CCommon : MonoBehaviour 
 {
@@ -8,6 +9,7 @@ public class CCommon : MonoBehaviour
 	void Awake()
 	{
 		m_bPause = false;
+		DOTween.Init();
 	}
 
 

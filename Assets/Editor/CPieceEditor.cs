@@ -16,10 +16,7 @@ public class CPieceEditor : Editor {
         Texture2D[] tex2ds = new Texture2D[(int)CPanel.EColor.MAX] {
             Resources.Load("Texture/Editor/white") as Texture2D,
             Resources.Load("Texture/Editor/orange") as Texture2D,
-            Resources.Load("Texture/Editor/red") as Texture2D,
-            Resources.Load("Texture/Editor/green") as Texture2D,
             Resources.Load("Texture/Editor/blue") as Texture2D,
-            Resources.Load("Texture/Editor/yellow") as Texture2D,
         };
         GUIStyle[] styles = new GUIStyle[(int)CPanel.EColor.MAX];
         for (int i = 0; i < styles.Length; ++i) {

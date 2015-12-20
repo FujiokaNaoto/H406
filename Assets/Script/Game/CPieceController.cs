@@ -2,184 +2,238 @@
 using System.Collections;
 
 public class CPieceController : CObject {
-    protected const float JOY_RANGE = 0.7f;
+	protected const float JOY_RANGE = 0.7f;
 
-    // Lerp制御
-    protected Transform start = null;
-    protected Transform end = null;
-    [SerializeField]
-    protected float time = 1.0f;
-    protected float diff = 0.0f;
-    [SerializeField]
-    protected AnimationCurve curve;
+	// Lerp制御
+	protected Transform start = null;
+	protected Transform end = null;
+	[SerializeField]
+	protected float time = 1.0f;
+	protected float diff = 0.0f;
+	[SerializeField]
+	protected AnimationCurve curve;
 
-    protected int direction      = 0;
-    protected int startDirection = 0;
-    protected int endDirection   = 0;
-    protected Quaternion [] directionQuaternions = new Quaternion[(int)CPanel.EDirection.MAX];
+	protected int direction	  = 0;
+	protected int startDirection = 0;
+	protected int endDirection   = 0;
+	protected Quaternion [] directionQuaternions = new Quaternion[(int)CPanel.EDirection.MAX];
 
-    protected CPanel panel = null;
-    protected CSelectBox selectBox = null;
-    protected int cursor = 0;
+	protected CPanel panel = null;
+	protected CSelectBox selectBox = null;
+	protected int cursor = 0;
 
-    protected bool isSelect = true;
-    protected bool isLerp = false;
+	protected bool isSelect = true;
+	protected bool isLerp = false;
+	public bool isDestroy {
+		get {
+			return _isDestroy;
+		}
+		set {
+			if (_isDestroy) return;
+			_isDestroy = value;
+			if (_isDestroy) {
+				Destroy(gameObject, fadeoutTime);
+			}
+		}
+	}
+	protected bool _isDestroy = false;
+	protected float fadeinTime = 0.25f;
+	protected float fadeoutTime = 1.0f;
+	protected SpriteRenderer spriteRenderer;
 
 	// 初期化処理
 	void Awake () {
+		spriteRenderer = GetComponent<SpriteRenderer>();
+		Color color = spriteRenderer.color;
+		color.a = 0.0f;
+		spriteRenderer.color = color;
 	}
 
-    public bool Create(GameObject _parent, GameObject _selectBox) {
-        
+	public bool Create(GameObject _parent, GameObject _selectBox) {
+		
 
-        selectBox = _selectBox.GetComponent<CSelectBox>();
-        transform.position = selectBox.refPoints[cursor].transform.position;
-        transform.rotation = selectBox.refPoints[cursor].transform.rotation;
-        transform.localScale = selectBox.refPoints[cursor].transform.localScale;
-        selectBox.pieces[cursor].transform.parent = transform;
+		selectBox = _selectBox.GetComponent<CSelectBox>();
+		transform.position = selectBox.refPoints[cursor].transform.position;
+		transform.rotation = selectBox.refPoints[cursor].transform.rotation;
+		transform.localScale = selectBox.refPoints[cursor].transform.localScale;
+		selectBox.pieces[cursor].transform.parent = transform;
 
-        for (int i = 0; i < (int)CPanel.EDirection.MAX; ++i) {
-            directionQuaternions[i] = new Quaternion();
-            directionQuaternions[i].eulerAngles = new Vector3(0.0f, 0.0f, 90.0f * i);
-        }
-        return base.Create(_parent);
-    }
-
-    // 更新処理
-    void Update () {
-        if (isLerp) {
-            OnLerp();
-            return;
-        }
-
-        if (isSelect) {
-            OnSelect();
-        }
-        else {
-            OnField();
-        }
+		for (int i = 0; i < (int)CPanel.EDirection.MAX; ++i) {
+			directionQuaternions[i] = new Quaternion();
+			directionQuaternions[i].eulerAngles = new Vector3(0.0f, 0.0f, 90.0f * i);
+		}
+		return base.Create(_parent);
 	}
 
-    protected void OnSelect() {
+	// 更新処理
+	void Update () {
+		if (isDestroy) {
+			Color color = spriteRenderer.color;
+			color.a -= Time.deltaTime / fadeoutTime;
+			spriteRenderer.color = color;
+		}
+		else if (spriteRenderer.color.a < 1.0f) {
+			Color color = spriteRenderer.color;
+			color.a += Time.deltaTime / fadeinTime;
+			if (color.a > 1.0f) color.a = 1.0f;
+			spriteRenderer.color = color;
+		}
+		
+		if (isLerp) {
+			OnLerp();
+			return;
+		}
+		
+		if (isDestroy) return;
+		
+		if (isSelect) {
+			OnSelect();
+		}
+		else {
+			OnField();
+		}
+	}
 
-        // ピース選択
-        if ((CManager.Instance.GetInput().GetKeyTrigger(KeyCode.DownArrow) || 
-            (CInput.Instance.GetJoyLStick().y < -JOY_RANGE && CInput.Instance.GetOldLStick.y > - JOY_RANGE)) &&
-            cursor < (int)CSelectBox.SELECT_NUM - 1) {
-            selectBox.pieces[cursor].transform.parent = selectBox.transform;
-            start = selectBox.refPoints[cursor].transform;
-            cursor ++;
-            end = selectBox.refPoints[cursor].transform;
-            startDirection = direction;
-            endDirection = direction;
-            isLerp = true;
-        }
-        else if ((CManager.Instance.GetInput().GetKeyTrigger(KeyCode.UpArrow) ||
-            (CInput.Instance.GetJoyLStick().y > JOY_RANGE && CInput.Instance.GetOldLStick.y < JOY_RANGE )) &&
-            cursor > 0) {
-            selectBox.pieces[cursor].transform.parent = selectBox.transform;
-            start = selectBox.refPoints[cursor].transform;
-            cursor --;
-            end = selectBox.refPoints[cursor].transform;
-            startDirection = direction;
-            endDirection = direction;
-            isLerp = true;
-        }
+	protected void OnSelect() {
+
+		// ピース選択
+		if ((CManager.Instance.GetInput().GetKeyTrigger(KeyCode.DownArrow) || 
+			(CInput.Instance.GetJoyLStick().y < -JOY_RANGE && CInput.Instance.GetOldLStick.y > - JOY_RANGE)) &&
+			cursor < (int)CSelectBox.SELECT_NUM - 1) {
+			selectBox.pieces[cursor].transform.parent = selectBox.transform;
+			start = selectBox.refPoints[cursor].transform;
+			cursor ++;
+			end = selectBox.refPoints[cursor].transform;
+			startDirection = direction;
+			endDirection = direction;
+			isLerp = true;
+
+			CAudio.Instance.PlaySE(CAudio.SECODE.PIECE_SELECT);
+		}
+		else if ((CManager.Instance.GetInput().GetKeyTrigger(KeyCode.UpArrow) ||
+			(CInput.Instance.GetJoyLStick().y > JOY_RANGE && CInput.Instance.GetOldLStick.y < JOY_RANGE )) &&
+			cursor > 0) {
+			selectBox.pieces[cursor].transform.parent = selectBox.transform;
+			start = selectBox.refPoints[cursor].transform;
+			cursor --;
+			end = selectBox.refPoints[cursor].transform;
+			startDirection = direction;
+			endDirection = direction;
+			isLerp = true;
+
+			CAudio.Instance.PlaySE(CAudio.SECODE.PIECE_SELECT);
+		}
 
 
-        // ピース確定
-        if (CManager.Instance.GetInput().GetKeyTrigger(KeyCode.Space) || CInput.Instance.GetJoyRelease(4)) {
-            isSelect = false;
+		// ピース確定
+		if (CManager.Instance.GetInput().GetKeyTrigger(KeyCode.Space) || CInput.Instance.GetJoyRelease(4)) {
+			isSelect = false;
 
-            selectBox.pieces[cursor].transform.parent = transform;
-            start = selectBox.refPoints[cursor].transform;
-            panel = CFieldManager.Instance.root;
-            end = panel.transform;
-            startDirection = direction;
-            endDirection = direction;
-            isLerp = true;
-        }
-    }
+			selectBox.pieces[cursor].transform.parent = transform;
+			start = selectBox.refPoints[cursor].transform;
+			panel = CFieldManager.Instance.root;
+			end = panel.transform;
+			startDirection = direction;
+			endDirection = direction;
+			isLerp = true;
+			GetComponent<Animator>().SetTrigger("Hold");
 
-    protected void OnField() {
+			CAudio.Instance.PlaySE(CAudio.SECODE.PIECE_DECISION);
+		}
+	}
 
-        // TODO ピース設置
-        if (CManager.Instance.GetInput().GetKeyTrigger(KeyCode.Space) || CInput.Instance.GetJoyRelease(4)) {
-            // 再起問い合わせ、成功で配置
-            if (panel.SetColors(selectBox.pieces[cursor].root)) {
-                Destroy(selectBox.pieces[cursor].gameObject);
-                start = panel.transform;
-                end = selectBox.refPoints[cursor].transform;
-                startDirection = direction;
-                direction = 0;
-                endDirection = direction;
-                isSelect = true;
-                isLerp = true;
-            }
-        }
+	protected void OnField() {
+
+		// TODO ピース設置
+		if (CManager.Instance.GetInput().GetKeyTrigger(KeyCode.Space) || CInput.Instance.GetJoyRelease(4)) {
+			// 再起問い合わせ、成功で配置
+			if (panel.SetColors(selectBox.pieces[cursor].root)) 
+			{
+				//CFieldManager.Instance.IsSet = true;		// ピースセットを通知
+
+				Destroy(selectBox.pieces[cursor].gameObject);
+				start = panel.transform;
+				end = selectBox.refPoints[cursor].transform;
+				startDirection = direction;
+				direction = 0;
+				endDirection = direction;
+				isSelect = true;
+				isLerp = true;
+				GetComponent<Animator>().SetTrigger("Hold");
+
+				CAudio.Instance.PlaySE(CAudio.SECODE.PIECE_SET);
+			}
+		}
 
 
-        // ピース選択モードへ戻る
-        else if (CManager.Instance.GetInput().GetKeyTrigger(KeyCode.N) || CInput.Instance.GetJoyRelease(3)) {
-            // セレクトボードにオブジェクト返却
-            start = panel.transform;
-            end = selectBox.refPoints[cursor].transform;
-            startDirection = direction;
-            direction = 0;
-            endDirection = direction;
-            foreach (CPanel child in selectBox.pieces[cursor].GetComponentsInChildren<CPanel>()) {
-                child.direction = 0;
-            }
-            isSelect = true;
-            isLerp = true;
-        }
+		// ピース選択モードへ戻る
+		else if (CManager.Instance.GetInput().GetKeyTrigger(KeyCode.N) || CInput.Instance.GetJoyRelease(3)) {
+			// セレクトボードにオブジェクト返却
+			start = panel.transform;
+			end = selectBox.refPoints[cursor].transform;
+			startDirection = direction;
+			direction = 0;
+			endDirection = direction;
+			foreach (CPanel child in selectBox.pieces[cursor].GetComponentsInChildren<CPanel>()) {
+				child.direction = 0;
+			}
+			isSelect = true;
+			isLerp = true;
+			GetComponent<Animator>().SetTrigger("Hold");
 
-        int newDirection = selectBox.pieces[cursor].GetComponentInChildren<CPanel>().direction;
+			CAudio.Instance.PlaySE(CAudio.SECODE.PIECE_CANCEL);
+		}
 
-        if (CManager.Instance.GetInput().GetKeyTrigger(KeyCode.Z) || CInput.Instance.GetJoyRelease(5)) newDirection = (newDirection + 1) % (int)CPanel.EDirection.MAX;
-        if (CManager.Instance.GetInput().GetKeyTrigger(KeyCode.X) || CInput.Instance.GetJoyRelease(6)) newDirection = (newDirection + (int)CPanel.EDirection.MAX - 1) % (int)CPanel.EDirection.MAX;
+		int newDirection = selectBox.pieces[cursor].GetComponentInChildren<CPanel>().direction;
 
-        if (newDirection != selectBox.pieces[cursor].GetComponentInChildren<CPanel>().direction) {
-            start = panel.transform;
-            end = panel.transform;
-            startDirection = direction;
-            direction = newDirection;
-            endDirection = direction;
-            foreach (CPanel child in selectBox.pieces[cursor].GetComponentsInChildren<CPanel>()) {
-                child.direction = direction;
-            }
-            isLerp = true;
-        }
+		if (CManager.Instance.GetInput().GetKeyTrigger(KeyCode.Z) || CInput.Instance.GetJoyRelease(5)) newDirection = (newDirection + 1) % (int)CPanel.EDirection.MAX;
+		if (CManager.Instance.GetInput().GetKeyTrigger(KeyCode.X) || CInput.Instance.GetJoyRelease(6)) newDirection = (newDirection + (int)CPanel.EDirection.MAX - 1) % (int)CPanel.EDirection.MAX;
 
-        CPanel newPanel = panel;
-        if ((Input.GetKeyDown(KeyCode.UpArrow) || (CInput.Instance.GetJoyLStick().y > JOY_RANGE && CInput.Instance.GetOldLStick.y < JOY_RANGE) )&& newPanel.up) newPanel = newPanel.up;
-        if ((Input.GetKeyDown(KeyCode.LeftArrow) || (CInput.Instance.GetJoyLStick().x < - JOY_RANGE && CInput.Instance.GetOldLStick.x > - JOY_RANGE)) && newPanel.left) newPanel = newPanel.left;
-        if ((Input.GetKeyDown(KeyCode.DownArrow) || (CInput.Instance.GetJoyLStick().y < - JOY_RANGE && CInput.Instance.GetOldLStick.y > - JOY_RANGE)) && newPanel.down) newPanel = newPanel.down;
-        if ((Input.GetKeyDown(KeyCode.RightArrow) || (CInput.Instance.GetJoyLStick().x > JOY_RANGE && CInput.Instance.GetOldLStick.x < JOY_RANGE)) && newPanel.right) newPanel = newPanel.right;
-        if (newPanel != panel) {
-            start = panel.transform;
-            panel = newPanel;
-            end = panel.transform;
-            startDirection = direction;
-            endDirection = direction;
-            isLerp = true;
-        }
-    }
+		if (newDirection != selectBox.pieces[cursor].GetComponentInChildren<CPanel>().direction) {
+			start = panel.transform;
+			end = panel.transform;
+			startDirection = direction;
+			direction = newDirection;
+			endDirection = direction;
+			foreach (CPanel child in selectBox.pieces[cursor].GetComponentsInChildren<CPanel>()) {
+				child.direction = direction;
+			}
+			isLerp = true;
 
-    protected void OnLerp() {
-        diff += Time.deltaTime / time;
-        if (diff >= time) {
-            transform.position = end.position;
-            transform.rotation = end.rotation * directionQuaternions[endDirection];
-            transform.localScale = end.localScale;
-            diff = 0.0f;
-            isLerp = false;
-            return;
-        }
+			CAudio.Instance.PlaySE(CAudio.SECODE.PIECE_ROTATE);
+		}
 
-        float rate = curve.Evaluate(diff / time);
-        transform.position = Vector3.Lerp(start.position, end.position, rate);
-        transform.rotation = Quaternion.Lerp(start.rotation * directionQuaternions[startDirection],end.rotation * directionQuaternions[endDirection], rate);
-        transform.localScale = Vector3.Lerp(start.localScale, end.localScale, rate);
-    }
+		CPanel newPanel = panel;
+		if ((Input.GetKeyDown(KeyCode.UpArrow) || (CInput.Instance.GetJoyLStick().y > JOY_RANGE && CInput.Instance.GetOldLStick.y < JOY_RANGE) )&& newPanel.up) newPanel = newPanel.up;
+		if ((Input.GetKeyDown(KeyCode.LeftArrow) || (CInput.Instance.GetJoyLStick().x < - JOY_RANGE && CInput.Instance.GetOldLStick.x > - JOY_RANGE)) && newPanel.left) newPanel = newPanel.left;
+		if ((Input.GetKeyDown(KeyCode.DownArrow) || (CInput.Instance.GetJoyLStick().y < - JOY_RANGE && CInput.Instance.GetOldLStick.y > - JOY_RANGE)) && newPanel.down) newPanel = newPanel.down;
+		if ((Input.GetKeyDown(KeyCode.RightArrow) || (CInput.Instance.GetJoyLStick().x > JOY_RANGE && CInput.Instance.GetOldLStick.x < JOY_RANGE)) && newPanel.right) newPanel = newPanel.right;
+		if (newPanel != panel) {
+			start = panel.transform;
+			panel = newPanel;
+			end = panel.transform;
+			startDirection = direction;
+			endDirection = direction;
+			isLerp = true;
+
+			CAudio.Instance.PlaySE(CAudio.SECODE.PIECE_SELECT);
+		}
+	}
+
+	protected void OnLerp() {
+		diff += Time.deltaTime / time;
+		if (diff >= time) {
+			transform.position = end.position;
+			transform.rotation = end.rotation * directionQuaternions[endDirection];
+			transform.localScale = end.localScale;
+			diff = 0.0f;
+			isLerp = false;
+			return;
+		}
+
+		float rate = curve.Evaluate(diff / time);
+		transform.position = Vector3.Lerp(start.position, end.position, rate);
+		transform.rotation = Quaternion.Lerp(start.rotation * directionQuaternions[startDirection],end.rotation * directionQuaternions[endDirection], rate);
+		transform.localScale = Vector3.Lerp(start.localScale, end.localScale, rate);
+	}
 }

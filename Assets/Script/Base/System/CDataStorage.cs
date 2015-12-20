@@ -9,8 +9,11 @@ public class CDataStorage : MonoBehaviour
     {
         TIME,
         STAGE,
-        SCORE,
-        MAX
+		SCORE,
+		CLOCK,
+		CLOCK_X,
+		CLOCK_Y,
+		MAX
     };
 
     protected List<int> m_DataList;

@@ -7,19 +7,24 @@ using System.Collections;
 public class CTitle : CScene 
 {
 	// --定数宣言--
-	readonly private Vector3 MIN_BUTTONSCALE = new Vector3(2.8f, 2.8f, 1.0f);
-	readonly private Vector3 MAX_BUTTONSCALE = new Vector3(3.2f, 3.2f, 1.0f);
+	readonly private Vector3 MIN_BUTTONSCALE = new Vector3(0.9f , 0.9f, 1.0f);
+	readonly private Vector3 MAX_BUTTONSCALE = new Vector3(1.1f, 1.1f, 1.0f);
 	readonly private float SCALE_SPD = 1.0f;
 
 	// --変数宣言--
 	public GameObject[] BGPrefab;						// 背景のプレハブ
 	public GameObject LogoPrefab;						// ロゴプレハブ
 	public GameObject ButtonPrefab;						// ボタンプレハブ
+	private bool m_bChanged;
+
+	public GameObject RankEffectPre;
 
 	private GameObject[] m_BG;							// 背景
 	private GameObject m_Logo;							// ロゴ
 	private GameObject m_Button;						// ボタンオブジェ
 	private int m_nCuurentBG;
+
+	private CRankEffect m_Rank;
 
 
 	//**関数***************************************************************************
@@ -28,6 +33,7 @@ public class CTitle : CScene
 	void Awake()
 	{
 		m_nCuurentBG = 0;
+		m_bChanged = false;
 	}
 
 
@@ -54,6 +60,15 @@ public class CTitle : CScene
 
 		m_Logo = (GameObject)GameObject.Instantiate(LogoPrefab);
 		m_Logo.GetComponent<CObj2D>().Create(gameObject);
+
+
+		GameObject buf = Instantiate(RankEffectPre);
+		buf.transform.SetParent(transform);
+		m_Rank = buf.GetComponent<CRankEffect>();
+
+		CAudio.Instance.PlayBGM(CAudio.BGMCODE.TITLE);
+
+		m_bChanged = false;
 
 		return base.Initialize();
 	}
@@ -89,9 +104,28 @@ public class CTitle : CScene
 			m_Button.GetComponent<TimeScaler>().SetTargetScale(MIN_BUTTONSCALE, SCALE_SPD, true);
 
 		// シーン遷移
-		if (CInput.Instance.GetKeyTrigger(KeyCode.Return) || 
+		if ((CInput.Instance.GetKeyTrigger(KeyCode.Return) ||
 			CInput.Instance.GetJoyTrigger(4) || CInput.Instance.GetJoyTrigger(10))
+			&& !m_bChanged)
+		{
+			m_bChanged = true;
+			CAudio.Instance.EndBGM(CAudio.BGMCODE.TITLE);
+			CAudio.Instance.PlaySE(CAudio.SECODE.BUTTON_SE);
 			CManager.Instance.GetSceneManager().SetNextScene(CSceneManager.eSceneID.MAIN, CChanging.eChangeType.WHITE_FEAD);
+		}
+
+		if (CInput.Instance.GetKeyTrigger(KeyCode.S))
+		{
+			m_Rank.Play(CRankEffect.eClearRank.GOLD);
+		}
+		if (CInput.Instance.GetKeyTrigger(KeyCode.A))
+		{
+			m_Rank.Play(CRankEffect.eClearRank.SILVER);
+		}
+		if (CInput.Instance.GetKeyTrigger(KeyCode.B))
+		{
+			m_Rank.Play(CRankEffect.eClearRank.BRONZE);
+		}
 	}
 
 }

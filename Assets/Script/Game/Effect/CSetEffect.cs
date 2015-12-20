@@ -19,9 +19,8 @@ public class CSetEffect : MonoBehaviour {
 	//**関数***************************************************************************
 	//	概要	:	エフェクト生成
 	//*********************************************************************************
-	public void Play(Color col)
+	public void Play()
 	{
-		//m_System.startColor = col;
 		m_System.Play();
 	}
 

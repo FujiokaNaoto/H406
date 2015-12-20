@@ -99,6 +99,8 @@ public class CChanging : CScene
 		// 前シーンを破棄して新規シーンを生成
 		//m_SceneManage.GetComponent<CSceneManager>().GetSceneObj(m_Bedore).SetActive(false);
 		m_SceneManage.GetComponent<CSceneManager>().ClearOnce(m_Bedore);
+		Camera.main.GetComponent<CCamera>().LerpPosition(Vector2.zero, 0.0f);
+		Camera.main.GetComponent<CCamera>().LerpSize(5.0f, 0.0f);
 		m_SceneManage.GetComponent<CSceneManager>().SetOnce(m_After);
 		//m_SceneManage.GetComponent<CSceneManager>().GetSceneObj(m_After).SetActive(true);
 	}

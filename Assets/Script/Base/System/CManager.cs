@@ -8,14 +8,15 @@ public class CManager : CSingleton<CManager>
 	public GameObject pInput;
 	public GameObject pSceneManager;
 	public GameObject pDataStorage;
-	// TODO カメラ、ライト
-
+	public GameObject pAudioPlayer;
+	
 
 	// --変数--
 	private GameObject m_Input = null;
 	private GameObject m_SceneManager = null;
 	private GameObject m_Camera = null;
 	private GameObject m_DataStorage = null;
+	private GameObject m_AudioPlayer = null;
 	
 	//**関数***************************************************************************
 	//	概要	:	オブジェクト多重生成防止
@@ -42,6 +43,13 @@ public class CManager : CSingleton<CManager>
 			m_Input.transform.SetParent(transform);
 		}
 
+		if (!m_AudioPlayer)
+		{
+			m_AudioPlayer = (GameObject)GameObject.Instantiate(pAudioPlayer);
+			m_AudioPlayer.transform.SetParent(transform);
+		}
+
+
 		if (!m_SceneManager)
 		{
 			m_SceneManager = (GameObject)GameObject.Instantiate(pSceneManager);
@@ -57,6 +65,16 @@ public class CManager : CSingleton<CManager>
 			m_DataStorage = (GameObject)GameObject.Instantiate(pDataStorage);
 			m_DataStorage.transform.SetParent(transform);
 		}
+	}
+
+
+	//**関数***************************************************************************
+	//	概要	:	更新(終了確認)
+	//*********************************************************************************
+	void Update()
+	{
+		if(Input.GetKeyUp(KeyCode.Escape))
+			Application.Quit();
 	}
 
 
@@ -79,7 +97,12 @@ public class CManager : CSingleton<CManager>
 	{
 		return m_DataStorage.GetComponent<CDataStorage>();
 	}
-
+	
+	public CAudio GetAudioPlayer()
+	{
+		return m_AudioPlayer.GetComponent<CAudio>();
+	}
+	
 	//**関数***************************************************************************
 	//	概要	:	カメラ取得
 	//*********************************************************************************

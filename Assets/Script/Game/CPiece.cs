@@ -6,44 +6,44 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class CPiece : CObject {
-    public const int PIECE_SIZE = 5;
-    public int rootX = PIECE_SIZE / 2;
-    public int rootY = PIECE_SIZE / 2;
-    public CPanel.EColor[] colors = new CPanel.EColor[PIECE_SIZE * PIECE_SIZE];
-    public GameObject [] panelPrefabs = new GameObject[(int)CPanel.EColor.MAX - 1];
-    public CPanel root { get; private set; }
-    
-    // 初期化処理
-    void Awake() {
-        GameObject[,] objs = new GameObject[PIECE_SIZE, PIECE_SIZE];
-        CPanel[,] panels = new CPanel[PIECE_SIZE, PIECE_SIZE];
-        for (int x = 0; x < PIECE_SIZE; ++x) {
-            for (int y = 0; y < PIECE_SIZE; ++y) {
-                if (colors[x + PIECE_SIZE * y] == CPanel.EColor.NONE || panelPrefabs[(int)colors[x + PIECE_SIZE * y] - 1] == null)
-                    continue;
-                objs[x, y] = Instantiate(panelPrefabs[(int)colors[x + PIECE_SIZE * y] - 1]);
-                objs[x, y].transform.parent = transform;
-                objs[x, y].transform.localPosition = new Vector3((float)x - rootX, (float)-y + rootY);
-                panels[x, y] = objs[x, y].GetComponent<CPanel>();
-            }
-        }
-        for (int x = 0; x < PIECE_SIZE; ++x) {
-            for (int y = 0; y < PIECE_SIZE; ++y) {
-                if (objs[x, y] == null) {
-                    continue;
-                }
-                if (x < PIECE_SIZE - 1) {
-                    panels[x, y].right = panels[x + 1, y];
-                }
-                if (y < PIECE_SIZE - 1) {
-                    panels[x, y].down = panels[x, y + 1];
-                }
-            }
-        }
-        root = panels[rootX, rootY];
-    }
+	public const int PIECE_SIZE = 5;
+	public int rootX = PIECE_SIZE / 2;
+	public int rootY = PIECE_SIZE / 2;
+	public CPanel.EColor[] colors = new CPanel.EColor[PIECE_SIZE * PIECE_SIZE];
+	public GameObject [] panelPrefabs = new GameObject[(int)CPanel.EColor.MAX - 1];
+	public CPanel root { get; private set; }
+	
+	// 初期化処理
+	void Awake() {
+		GameObject[,] objs = new GameObject[PIECE_SIZE, PIECE_SIZE];
+		CPanel[,] panels = new CPanel[PIECE_SIZE, PIECE_SIZE];
+		for (int x = 0; x < PIECE_SIZE; ++x) {
+			for (int y = 0; y < PIECE_SIZE; ++y) {
+				if (colors[x + PIECE_SIZE * y] == CPanel.EColor.NONE || panelPrefabs[(int)colors[x + PIECE_SIZE * y] - 1] == null)
+					continue;
+				objs[x, y] = Instantiate(panelPrefabs[(int)colors[x + PIECE_SIZE * y] - 1]);
+				objs[x, y].transform.parent = transform;
+				objs[x, y].transform.localPosition = new Vector3((float)x - rootX, (float)-y + rootY);
+				panels[x, y] = objs[x, y].GetComponent<CPanel>();
+			}
+		}
+		for (int x = 0; x < PIECE_SIZE; ++x) {
+			for (int y = 0; y < PIECE_SIZE; ++y) {
+				if (objs[x, y] == null) {
+					continue;
+				}
+				if (x < PIECE_SIZE - 1) {
+					panels[x, y].right = panels[x + 1, y];
+				}
+				if (y < PIECE_SIZE - 1) {
+					panels[x, y].down = panels[x, y + 1];
+				}
+			}
+		}
+		root = panels[rootX, rootY];
+	}
 
-    /*
+	/*
 	// --定数--
 	public enum eType
 	{
@@ -355,5 +355,5 @@ public class CPiece : CObject {
 			return m_Children;
 		}
 	}
-    */
+	*/
 }

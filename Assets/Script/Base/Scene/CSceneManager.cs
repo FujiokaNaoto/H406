@@ -5,7 +5,7 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
-public class CSceneManager : MonoBehaviour 
+public class CSceneManager : CSingleton<CSceneManager> 
 {
 	public GameObject	ChangingPrefab;
 	public GameObject	TitlePrefab;
@@ -55,6 +55,13 @@ public class CSceneManager : MonoBehaviour
 			m_SceneObject[i].GetComponent<CScene>().Create(i);
 			m_SceneObject[i].transform.SetParent(transform);
 		}
+
+		if (this != Instance)
+		{
+			Destroy(this);
+			return;
+		}
+		DontDestroyOnLoad(this.gameObject);
 	}
 
 
@@ -160,7 +167,7 @@ public class CSceneManager : MonoBehaviour
 
 
 	//===========================================================
-	// 現在のシーンオブジェクト取得
+	// 指定のシーンオブジェクト取得
 	//===========================================================
 	public GameObject GetSceneObj(eSceneID SceneID)
 	{
